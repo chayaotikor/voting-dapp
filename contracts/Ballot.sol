@@ -3,6 +3,7 @@ pragma solidity >=0.4.22 <0.8.0;
 contract Election {
    /* VARIABLES */
    //STRUCTS
+    // For use when ranked choice allowed
     // struct Proposal {
     //     uint256[] options;
     //     uint256 proposalNumber;
@@ -17,14 +18,14 @@ contract Election {
         bool voted;
         // address token;
         address voterAddress;
-        uint[] choices;
+        uint256[] choices;
     }
 
    //UINTS
     // uint public totalTokens;
 
    //ARRAYS
-    Proposal[] electionProposals;
+    Proposal[] public electionProposals;
     // address[] internal registeredAddressList;
 
    //MAPPING
@@ -39,8 +40,8 @@ contract Election {
         _;
     }
 
-    modifier isRegisteredVoter (address sender){
-        require(registeredVoters[sender].voterAddress != address(0));
+    modifier isRegisteredVoter (){
+        require(registeredVoters[msg.sender].voterAddress != address(0));
         _;
     }
 
@@ -50,43 +51,51 @@ contract Election {
         electionOfficial = msg.sender;
         electionProposals.length = _numOfProposals;
     }
-    function register(address voter) public onlyOfficial isRegisteredVoter(voter) {
+
+    //ELECTION SETUP FUNCTIONS
+    function register(address voter) public onlyOfficial {
         //Check if the voter is already registered based on their address
-        // if(registeredVoters[voter].voterAddress != address(0)) revert();
+        if(registeredVoters[voter].voterAddress != address(0)) revert();
         
         registeredVoters[voter].voterAddress = voter;
         registeredVoters[voter].voted = false;
     }
 
-    
-    function vote(uint256[] memory voterChoices) public isRegisteredVoter(msg.sender) {
+    //VOTING FUNCTIONS
+    function vote(uint256[] memory voterChoices) public isRegisteredVoter {
         Voter storage sender = registeredVoters[msg.sender];
         if(sender.voted) revert();
-        for(uint256 proposalNum = 0; proposalNum < electionProposals.length; proposalNum++){
-        sender.choices[proposalNum] = voterChoices[proposalNum];
-        if(voterChoices[proposalNum] == 0){
-            electionProposals[proposalNum].noCount++;
-        } else if(voterChoices[proposalNum] == 1){
-            electionProposals[proposalNum].yesCount++;
+        for(uint256 index = 0; index < electionProposals.length; index++){
+        sender.choices[index] = voterChoices[index];
+        if(voterChoices[index] == 0){
+            electionProposals[index].noCount++;
+        } else if(voterChoices[index] == 1){
+            electionProposals[index].yesCount++;
         }
         }
         sender.voted = true;
     }
 
-    function setWinningProposals() public view returns(uint256[] memory winningProposals){
-        for(uint256 proposalNum = 0; proposalNum < electionProposals.length; proposalNum++){
-            if(electionProposals[proposalNum].yesCount > electionProposals[proposalNum].noCount ){
-                winningProposals[proposalNum] = 1;
+    function getWinningProposals() public view returns(uint256[] memory winningProposals){
+        for(uint256 index = 0; index < electionProposals.length; index++){
+            if(electionProposals[index].yesCount > electionProposals[index].noCount ){
+                winningProposals[index] = 1;
             } else {
-                winningProposals[proposalNum] = 0;
+                winningProposals[index] = 0;
             }
         }
     }
 
-    function getCount(uint256 proposalNumber) public view returns (uint256[2] memory totalCounts){
-       totalCounts[0] = electionProposals[proposalNumber].yesCount;
-       totalCounts[1] = electionProposals[proposalNumber].noCount;
+    //AUDITING FUNCTIONS
+    function getProposalCount(uint256 proposalNumber) public view returns (uint256[2] memory totalCounts){
+       totalCounts[0] = electionProposals[proposalNumber].noCount;
+       totalCounts[1] = electionProposals[proposalNumber].yesCount;
 
        return totalCounts;
+    }
+
+    function getVoterChoices(address voter) public view returns (uint[] memory finalChoices){
+        if(msg.sender != voter) revert();
+        return registeredVoters[voter].choices;
     }
 }
