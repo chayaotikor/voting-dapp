@@ -1,11 +1,11 @@
 pragma solidity >=0.4.22 <0.8.0;
 
-contract Ballot {
+contract Election {
    /* VARIABLES */
    //STRUCTS
     struct Proposal {
-        uint[] options;
-        uint proposalNumber;
+        uint256[] options;
+        uint256 proposalNumber;
         bytes32 proposalType;
     }
 
@@ -13,7 +13,7 @@ contract Ballot {
         bool voted;
         address token;
         address voterAddress;
-        mapping(uint => Proposal) choices;
+        uint256[] choices;
     }
 
    //UINTS
@@ -21,7 +21,7 @@ contract Ballot {
     uint public totalProposals;
 
    //MAPPING
-    mapping(address => Voter) validVoters;
+    mapping(address => Voter) registeredVoters;
 
    //Address
     address public electionOfficial;
@@ -32,6 +32,11 @@ contract Ballot {
         _;
     }
 
+    modifier isRegisteredVoter (){
+        require(registeredVoters[msg.sender].voterAddress != address(0));
+        _;
+    }
+
     /* FUNCTIONS */
     //CONSTRUCTOR
     constructor() public {
@@ -39,9 +44,18 @@ contract Ballot {
     }
     function register(address voter) public onlyOfficial {
         //Check if the voter is already registered based on their address
-        if(validVoters[voter].voterAddress != address(0)) revert();
+        if(registeredVoters[voter].voterAddress != address(0)) revert();
 
-        validVoters[voter].voted = false;
+        registeredVoters[voter].voted = false;
+    }
+    
+    function vote(uint256[] memory voterChoices) public isRegisteredVoter {
+        Voter storage sender = registeredVoters[msg.sender];
+        if(sender.voted) revert();
+        for(uint256 proposalNum; proposalNum < voterChoices.length; proposalNum++){
+        sender.choices[proposalNum] = voterChoices[proposalNum];
+        }
+        sender.voted = true;
     }
 
 }
