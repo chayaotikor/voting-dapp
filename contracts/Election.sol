@@ -10,15 +10,15 @@ contract Election {
   //     bytes32 proposalType;
   // }
   struct Proposal {
-    uint256 yesCount;
-    uint256 noCount;
+    uint yesCount;
+    uint noCount;
   }
 
   struct Voter {
     bool voted;
     // address token;
     address voterAddress;
-    uint256[] choices;
+    uint[] choices;
   }
 
   //Custom
@@ -29,8 +29,8 @@ contract Election {
   mapping(address => Voter) voters;
 
   //UINTS
-  uint256 public totalRegisteredVoters;
-  uint256 public totalVoted;
+  uint public totalRegisteredVoters;
+  uint public totalVoted;
 
   //ADDRESSES
   address public electionOfficial;
@@ -59,10 +59,10 @@ contract Election {
 
   /* FUNCTIONS */
   //CONSTRUCTOR
-  constructor(uint256 _numOfProposals) public {
+  constructor(uint _numOfProposals) public {
     electionOfficial = msg.sender;
     electionProposals.length = _numOfProposals;
-    for (uint256 i = 0; i < _numOfProposals; i++) {
+    for (uint i = 0; i < _numOfProposals; i++) {
       electionProposals[i].yesCount = 0;
       electionProposals[i].noCount = 0;
     }
@@ -79,29 +79,28 @@ contract Election {
   }
 
   //VOTING FUNCTIONS
-  function vote(uint256[] memory voterChoices)
+  function vote(uint[] memory voterChoices)
     public
     isRegisteredVoter
     hasNotVoted
   {
-    Voter storage sender = voters[msg.sender];
-    for (uint256 index = 0; index < electionProposals.length; index++) {
-      sender.choices[index] = voterChoices[index];
-      if (sender.choices[index] == 0) {
+    for (uint index = 0; index < electionProposals.length; index++) {
+      voters[msg.sender].choices[index] = voterChoices[index];
+      if (voters[msg.sender].choices[index] == 0) {
         electionProposals[index].noCount++;
-      } else if (sender.choices[index] == 1) {
+      } else if (voters[msg.sender].choices[index] == 1) {
         electionProposals[index].yesCount++;
       }
     }
-    sender.voted = true;
+    voters[msg.sender].voted = true;
   }
 
   function getWinningProposals()
     public
     view
-    returns (uint256[] memory winningProposals)
+    returns (uint[] memory winningProposals)
   {
-    for (uint256 index = 0; index < electionProposals.length; index++) {
+    for (uint index = 0; index < electionProposals.length; index++) {
       if (
         electionProposals[index].yesCount > electionProposals[index].noCount
       ) {
@@ -113,10 +112,10 @@ contract Election {
   }
 
   //AUDITING FUNCTIONS
-  function getProposalCount(uint256 proposalNumber)
+  function getProposalCount(uint proposalNumber)
     public
     view
-    returns (uint256[2] memory totalCounts)
+    returns (uint[2] memory totalCounts)
   {
     totalCounts[0] = electionProposals[proposalNumber].noCount;
     totalCounts[1] = electionProposals[proposalNumber].yesCount;
@@ -127,17 +126,17 @@ contract Election {
   function getVoterChoices(address voter)
     public
     view
-    returns (uint256[] memory finalChoices)
+    returns (uint[] memory finalChoices)
   {
     if (msg.sender != voter) revert();
     return voters[voter].choices;
   }
 
-  function countRegisteredVoters() public view returns (uint256) {
+  function countRegisteredVoters() public view returns (uint) {
     return totalRegisteredVoters;
   }
 
-  function getNumberOfProposals() public view returns (uint256) {
+  function getNumberOfProposals() public view returns (uint) {
     return electionProposals.length;
   }
 }

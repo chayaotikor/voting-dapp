@@ -28,21 +28,9 @@ contract("Election Contract", function (accounts) {
         assert.equal(3, result)
   })
 
+  it("Should accept valid voting on proposals", async () => {
+    let result = await electionInstance.vote([0, 1, 1, 0, 1], { from: accounts[1] })
+      
+      assert.equal(true, result.receipt.status, "Votes have been cast.");
+  });
 });
-
-// it("Should accept valid voting on proposals", function () {
-//   return electionInstance
-//     .vote([0,1,1,0,1], { from: accounts[1] })
-//     .then(function (result) {
-//         assert.equal("0x1", result.receipt.status, "Voting is done");
-//         console.log(electionInstance.vote([1, 0, 1, 0, 1], { from: accounts[2] }))
-//       return electionInstance.vote([1, 0, 1, 0, 1], { from: accounts[2] });
-//     })
-//     .then(function (result) {
-//       assert.equal("0x1", result.receipt.status, "Voting is done");
-//       return electionInstance.vote([1, 1, 1, 1, 1], { from: accounts[3] });
-//     })
-//     .then(function (result) {
-//       assert.equal("0x1", result.receipt.status, "Voting is done");
-//     });
-// });
