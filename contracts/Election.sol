@@ -113,6 +113,10 @@ contract Election {
   }
 
   //AUDITING FUNCTIONS
+
+  function countRegisteredVoters() public view returns (uint) {
+    return totalRegisteredVoters;
+  }
     function getVoterChoices(address voter)
     public
     view
@@ -121,7 +125,9 @@ contract Election {
     if (msg.sender != voter) revert();
     return voters[voter].choices;
   }
-
+  function getNumberOfProposals() public view returns (uint) {
+    return electionProposals.length;
+  }
   function getWinningProposals() public view returns(bool[] memory){
     return winningProposals;
   }
@@ -137,11 +143,5 @@ contract Election {
     return totalCounts;
   }
 
-  function countRegisteredVoters() public view returns (uint) {
-    return totalRegisteredVoters;
-  }
 
-  function getNumberOfProposals() public view returns (uint) {
-    return electionProposals.length;
-  }
 }

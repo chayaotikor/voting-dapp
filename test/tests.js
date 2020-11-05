@@ -32,44 +32,40 @@ contract("Election Contract", function (accounts) {
     let result = await electionInstance.vote([false, true, false, true, true], {
       from: accounts[1],
     });
-    assert.equal(true, result.receipt.status, "Vote has been cast.");
+    assert.equal(result.receipt.status, true, "Vote has been cast.");
   });
   it("Should return the voter's choices to them correctly", async () => {
-    let returnedChoices = await electionInstance.getVoterChoices(accounts[1], {
+    let actualChoices = await electionInstance.getVoterChoices(accounts[1], {
       from: accounts[1],
     });
-    let actualChoices = [false, true, false, true, true];
-    for (let i = 0; i < returnedChoices.length; i++) {
-      if (returnedChoices[i] !== actualChoices[i]) {
-        assert(false, "Actual choices don't match returned choices");
-      }
-    }
-    assert(true);
+    let expectedChoices = [false, true, false, true, true];
+    assert.deepEqual(actualChoices, expectedChoices);
   });
   it("Should accept counting of winning proposals", async () => {
-        await electionInstance.vote([true, false, false, false, true], {
-          from: accounts[2],
-        });
-        await electionInstance.vote([true, true, true, false, false], {
-          from: accounts[3],
-        });
-    
-    let result = await electionInstance.countWinningProposals()
-        assert.equal(true, result.receipt.status, "Proposal count has been completed.");
+    await electionInstance.vote([true, false, false, false, true], {
+      from: accounts[2],
+    });
+    await electionInstance.vote([true, true, true, false, false], {
+      from: accounts[3],
+    });
+
+    let result = await electionInstance.countWinningProposals();
+    assert.equal(
+      result.receipt.status,
+      true,
+      "Proposal count has been completed."
+    );
   });
 
   it("Should return the correct boolean value for each proposal", async () => {
     let expectedResults = [true, true, false, false, true];
     let actualResults = await electionInstance.getWinningProposals();
-      for (let i = 0; i < actualResults.length; i++) {
-        if (actualResults[i] !== expectedResults[i]) {
-          assert(false, "Actual results don't match expected results");
-        }
-      }
-      assert(true);
-  })
-  // it("Should return the yes and no counts for a given proposal", async () => {
-  //   let returnedCount = await electionInstance.getProposalCount(0);
-  //   console.log(returnedCount)
-  // })
+
+    assert.deepEqual(actualResults, expectedResults);
+  });
+  it("Should return the yes and no counts for a given proposal", async () => {
+    let countBN = await electionInstance.getProposalCount(0);
+    let actualCount = [countBN[0].toNumber(), countBN[1].toNumber()];
+    assert.deepEqual(actualCount, [1, 2]);
+  });
 });
