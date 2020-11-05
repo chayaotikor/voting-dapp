@@ -86,9 +86,9 @@ contract Election {
   {
     for (uint index = 0; index < electionProposals.length; index++) {
       voters[msg.sender].choices[index] = voterChoices[index];
-      if (voters[msg.sender].choices[index] == 0) {
+      if (voterChoices[index] == 0) {
         electionProposals[index].noCount++;
-      } else if (voters[msg.sender].choices[index] == 1) {
+      } else if (voterChoices[index] == 1) {
         electionProposals[index].yesCount++;
       }
     }
