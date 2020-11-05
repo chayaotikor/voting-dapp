@@ -21,8 +21,9 @@ contract Election {
     bool[] choices;
   }
 
-  //Custom
+  //Arrays
   Proposal[] public electionProposals;
+  bool[] winningProposals;
   // address[] internal registeredAddressList;
 
   //MAPPING
@@ -62,6 +63,7 @@ contract Election {
   constructor(uint _numOfProposals) public {
     electionOfficial = msg.sender;
     electionProposals.length = _numOfProposals;
+    winningProposals.length = _numOfProposals;
     for (uint i = 0; i < _numOfProposals; i++) {
       electionProposals[i].yesCount = 0;
       electionProposals[i].noCount = 0;
@@ -96,10 +98,8 @@ contract Election {
     voters[msg.sender].voted = true;
   }
 
-  function getWinningProposals()
+  function countWinningProposals()
     public
-    view
-    returns (bool[] memory winningProposals)
   {
     for (uint index = 0; index < electionProposals.length; index++) {
       if (
@@ -121,7 +121,11 @@ contract Election {
     if (msg.sender != voter) revert();
     return voters[voter].choices;
   }
-  
+
+  function getWinningProposals() public view returns(bool[] memory){
+    return winningProposals;
+  }
+
   function getProposalCount(uint proposalNumber)
     public
     view
