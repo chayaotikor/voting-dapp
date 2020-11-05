@@ -38,6 +38,12 @@ contract("Election Contract", function (accounts) {
     let result = await electionInstance.getVoterChoices(accounts[2], {
       from: accounts[2],
     });
-    assert.equal(result, [false, true, false, true, true]);
+    let voterChoices = [false, true, false, true, true]
+    for (let i = 0; i < result.length; i++){
+      if (result[i] !== voterChoices[i]) {
+        assert(false, "Voter choices do not match.")
+      }
+    }
+    assert(true)
   });
 });
