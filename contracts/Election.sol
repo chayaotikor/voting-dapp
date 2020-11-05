@@ -99,20 +99,29 @@ contract Election {
   function getWinningProposals()
     public
     view
-    returns (uint[] memory winningProposals)
+    returns (bool[] memory winningProposals)
   {
     for (uint index = 0; index < electionProposals.length; index++) {
       if (
         electionProposals[index].yesCount > electionProposals[index].noCount
       ) {
-        winningProposals[index] = 1;
+        winningProposals[index] = true;
       } else {
-        winningProposals[index] = 0;
+        winningProposals[index] = false;
       }
     }
   }
 
   //AUDITING FUNCTIONS
+    function getVoterChoices(address voter)
+    public
+    view
+    returns (bool[] memory finalChoices)
+  {
+    if (msg.sender != voter) revert();
+    return voters[voter].choices;
+  }
+  
   function getProposalCount(uint proposalNumber)
     public
     view
@@ -122,15 +131,6 @@ contract Election {
     totalCounts[1] = electionProposals[proposalNumber].yesCount;
 
     return totalCounts;
-  }
-
-  function getVoterChoices(address voter)
-    public
-    view
-    returns (bool[] memory finalChoices)
-  {
-    if (msg.sender != voter) revert();
-    return voters[voter].choices;
   }
 
   function countRegisteredVoters() public view returns (uint) {

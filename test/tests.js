@@ -30,20 +30,36 @@ contract("Election Contract", function (accounts) {
 
   it("Should accept valid voting on proposals", async () => {
     let result = await electionInstance.vote([false, true, false, true, true], {
-      from: accounts[2],
+      from: accounts[1],
     });
     assert.equal(true, result.receipt.status, "Vote has been cast.");
   });
-  it("Should return the voter's choices to them", async () => {
-    let result = await electionInstance.getVoterChoices(accounts[2], {
-      from: accounts[2],
+  it("Should return the voter's choices to them correctly", async () => {
+    let returnedChoices = await electionInstance.getVoterChoices(accounts[1], {
+      from: accounts[1],
     });
-    let voterChoices = [false, true, false, true, true]
-    for (let i = 0; i < result.length; i++){
-      if (result[i] !== voterChoices[i]) {
-        assert(false, "Voter choices do not match.")
+    let actualChoices = [false, true, false, true, true]
+    for (let i = 0; i < returnedChoices.length; i++){
+      if (returnedChoices[i] !== actualChoices[i]) {
+        assert(false, "Actual choices don't match returned choices");
       }
     }
     assert(true)
   });
+  it("Should return an array with the winning proposals", async () => {
+    await electionInstance.vote([true, false, false, false, true], {
+      from: accounts[2],
+    });
+    await electionInstance.vote([true, true, true, false, false], {
+      from: accounts[3],
+    });
+    let expectedResults = [true, true, false, false, true]
+    let actualResults = await electionInstance.getWinningProposals();
+        for (let i = 0; i < result.length; i++) {
+          if (actualResults[i] !== expectedResults[i]) {
+            assert(false, "Actual results don't match expected results");
+          }
+    }
+    assert(true);
+  })
 });
