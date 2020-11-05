@@ -18,7 +18,7 @@ contract Election {
     bool voted;
     // address token;
     address voterAddress;
-    uint[] choices;
+    bool[] choices;
   }
 
   //Custom
@@ -75,20 +75,21 @@ contract Election {
 
     voters[registeringVoter].voterAddress = registeringVoter;
     voters[registeringVoter].voted = false;
+    voters[registeringVoter].choices.length = electionProposals.length;
     totalRegisteredVoters++;
   }
 
   //VOTING FUNCTIONS
-  function vote(uint[] memory voterChoices)
+  function vote(bool[] memory voterChoices)
     public
     isRegisteredVoter
     hasNotVoted
   {
-    for (uint index = 0; index < electionProposals.length; index++) {
-      voters[msg.sender].choices[index] = voterChoices[index];
-      if (voterChoices[index] == 0) {
+    voters[msg.sender].choices= voterChoices;
+    for (uint index = 0; index < voterChoices.length; index++) {
+      if (voterChoices[index] == false) {
         electionProposals[index].noCount++;
-      } else if (voterChoices[index] == 1) {
+      } else if (voterChoices[index] == true) {
         electionProposals[index].yesCount++;
       }
     }
@@ -126,7 +127,7 @@ contract Election {
   function getVoterChoices(address voter)
     public
     view
-    returns (uint[] memory finalChoices)
+    returns (bool[] memory finalChoices)
   {
     if (msg.sender != voter) revert();
     return voters[voter].choices;
