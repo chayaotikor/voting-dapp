@@ -3,13 +3,11 @@ pragma solidity >=0.4.22 <0.8.0;
 contract Election {
   /* VARIABLES */
   //STRUCTS
-  // For use when ranked choice allowed
-  // struct Proposal {
-  //     uint[] options;
-  //     uint proposalNumber;
-  //     bytes32 proposalType;
-  // }
-  struct Proposal {
+
+  struct RankedProposal {
+    uint[] rankCount;
+  }
+  struct PluralityProposal {
     uint yesCount;
     uint noCount;
   }
@@ -22,7 +20,7 @@ contract Election {
   }
 
   //Arrays
-  Proposal[] public electionProposals;
+  PluralityProposal[] public pluralityProposals;
   bool[] winningProposals;
   // address[] internal registeredAddressList;
 
@@ -62,11 +60,11 @@ contract Election {
   //CONSTRUCTOR
   constructor(uint _numOfProposals) public {
     electionOfficial = msg.sender;
-    electionProposals.length = _numOfProposals;
+    pluralityProposals.length = _numOfProposals;
     winningProposals.length = _numOfProposals;
     for (uint i = 0; i < _numOfProposals; i++) {
-      electionProposals[i].yesCount = 0;
-      electionProposals[i].noCount = 0;
+      pluralityProposals[i].yesCount = 0;
+      pluralityProposals[i].noCount = 0;
     }
   }
 
@@ -77,7 +75,7 @@ contract Election {
 
     voters[registeringVoter].voterAddress = registeringVoter;
     voters[registeringVoter].voted = false;
-    voters[registeringVoter].choices.length = electionProposals.length;
+    voters[registeringVoter].choices.length = pluralityProposals.length;
     totalRegisteredVoters++;
   }
 
@@ -90,9 +88,9 @@ contract Election {
     voters[msg.sender].choices= voterChoices;
     for (uint index = 0; index < voterChoices.length; index++) {
       if (voterChoices[index] == false) {
-        electionProposals[index].noCount++;
+        pluralityProposals[index].noCount++;
       } else if (voterChoices[index] == true) {
-        electionProposals[index].yesCount++;
+        pluralityProposals[index].yesCount++;
       }
     }
     voters[msg.sender].voted = true;
@@ -101,9 +99,9 @@ contract Election {
   function countWinningProposals()
     public
   {
-    for (uint index = 0; index < electionProposals.length; index++) {
+    for (uint index = 0; index < pluralityProposals.length; index++) {
       if (
-        electionProposals[index].yesCount > electionProposals[index].noCount
+        pluralityProposals[index].yesCount > pluralityProposals[index].noCount
       ) {
         winningProposals[index] = true;
       } else {
@@ -126,7 +124,7 @@ contract Election {
     return voters[voter].choices;
   }
   function getNumberOfProposals() public view returns (uint) {
-    return electionProposals.length;
+    return pluralityProposals.length;
   }
   function getWinningProposals() public view returns(bool[] memory){
     return winningProposals;
@@ -137,8 +135,8 @@ contract Election {
     view
     returns (uint[2] memory totalCounts)
   {
-    totalCounts[0] = electionProposals[proposalNumber].noCount;
-    totalCounts[1] = electionProposals[proposalNumber].yesCount;
+    totalCounts[0] = pluralityProposals[proposalNumber].noCount;
+    totalCounts[1] = pluralityProposals[proposalNumber].yesCount;
 
     return totalCounts;
   }
