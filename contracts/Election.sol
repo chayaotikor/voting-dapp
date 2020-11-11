@@ -40,7 +40,7 @@ contract Election {
   modifier onlyOfficial() {
     require(
       msg.sender == electionOfficial,
-      "You are not the election official."
+      "You are not authorized to take this action."
     );
     _;
   }
@@ -73,7 +73,7 @@ contract Election {
   //ELECTION SETUP FUNCTIONS
   function register(address registeringVoter) public onlyOfficial {
     //Check if the voter is already registered based on their address
-    if (voters[registeringVoter].voterAddress != address(0)) revert();
+    if (voters[registeringVoter].voterAddress != address(0)) revert("Voter is already registered.");
 
     voters[registeringVoter].voterAddress = registeringVoter;
     voters[registeringVoter].voted = false;
@@ -122,7 +122,7 @@ contract Election {
     view
     returns (bool[] memory finalChoices)
   {
-    if (msg.sender != voter) revert();
+    if (msg.sender != voter) revert("You are not authorized to view this information.");
     return voters[voter].choices;
   }
   function getNumberOfProposals() public view returns (uint) {

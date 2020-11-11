@@ -68,4 +68,60 @@ contract("Election Contract", function (accounts) {
     let actualCount = [countBN[0].toNumber(), countBN[1].toNumber()];
     assert.deepEqual(actualCount, [1, 2]);
   });
+
+  /* NEGATIVE TESTS */
+  it("Should NOT allow an account other than the election official to register a voter", async () => {
+    try {
+      await electionInstance.register(accounts[4], {
+        from: accounts[1],
+      });
+      assert(false);
+    } catch (error) {
+      assert(error.message.includes("You are not authorized to take this action."));
+    }
+  });
+  it("Should NOT allow an account to be registered twice", async () => {
+    try {
+      await electionInstance.register(accounts[1], {
+        from: accounts[0],
+      });
+      assert(false);
+    } catch (error) {
+      assert(error.message.includes("Voter is already registered."));
+    }
+  });
+  it("Should NOT allow an account to vote that is not registered", async () => {
+    try {
+      await electionInstance.vote([false, true, false, true, true], {
+        from: accounts[5],
+      });
+      assert(false);
+    } catch (error) {
+      assert(error.message.includes("Voter is not registered."));
+    }
+  });
+  it("Should NOT allow an account to vote twice", async () => {
+    try {
+      await electionInstance.vote([false, true, false, true, true], {
+        from: accounts[1],
+      });
+      assert(false);
+    } catch (error) {
+      assert(error.message.includes("Voter has already voted."));
+    }
+  });
+  it("Should NOT allow anyone to view a voter's choices except that voter", async () => {
+    try {
+      await electionInstance.getVoterChoices(accounts[1], {
+        from: accounts[0],
+      });
+      assert(false);
+    } catch (error) {
+      assert(
+        error.message.includes(
+          "You are not authorized to view this information."
+        )
+      );
+    }
+  });
 });
