@@ -1,11 +1,14 @@
 pragma solidity >=0.4.22 <0.8.0;
+pragma experimental ABIEncoderV2;
 
 contract Election {
   /* VARIABLES */
-  //STRUCTS
 
+  //STRUCTS
   struct RankedProposal {
-    uint[] rankCount;
+    uint[] rankedCount;
+    uint totalVotes;
+    uint numOfOptions;
   }
   struct PluralityProposal {
     uint yesCount;
@@ -13,23 +16,24 @@ contract Election {
   }
 
   struct Voter {
-    bool voted;
-    // address token;
+    bool[2] voted;
     address voterAddress;
-    bool[] choices;
+    bool[] pluralityChoices;
+    uint[][] rankedChoices;
   }
 
   //Arrays
   PluralityProposal[] public pluralityProposals;
-  bool[] winningProposals;
-  // address[] internal registeredAddressList;
+  bool[] winningPluralityProposals;
+
+  RankedProposal[] public rankedProposals;
+  uint[] winningRankedProposals;
 
   //MAPPING
   mapping(address => Voter) voters;
 
   //UINTS
   uint public totalRegisteredVoters;
-  uint public totalVoted;
 
   //ADDRESSES
   address public electionOfficial;
@@ -51,20 +55,30 @@ contract Election {
     _;
   }
 
-  modifier hasNotVoted() {
-    require(voters[msg.sender].voted == false, "Voter has already voted.");
+  modifier hasNotVoted(uint voteType) {
+    require(voters[msg.sender].voted[voteType] == false, "Voter has already voted.");
     _;
   }
 
   /* FUNCTIONS */
   //CONSTRUCTOR
-  constructor(uint _numOfProposals) public {
+  constructor(uint _numOfPlurality, uint[] memory rankedOptionCount) public {
     electionOfficial = msg.sender;
-    pluralityProposals.length = _numOfProposals;
-    winningProposals.length = _numOfProposals;
-    for (uint i = 0; i < _numOfProposals; i++) {
+
+    pluralityProposals.length = _numOfPlurality;
+    winningPluralityProposals.length = _numOfPlurality;
+
+    rankedProposals.length = rankedOptionCount.length;
+    winningRankedProposals.length = rankedOptionCount.length;
+
+    for (uint i = 0; i < _numOfPlurality; i++) {
       pluralityProposals[i].yesCount = 0;
       pluralityProposals[i].noCount = 0;
+    }
+
+    for(uint j = 0; j < rankedOptionCount.length; j++){
+      rankedProposals[j].numOfOptions = rankedOptionCount[j];
+      rankedProposals[j].totalVotes = 0;
     }
   }
 
@@ -74,39 +88,64 @@ contract Election {
     if (voters[registeringVoter].voterAddress != address(0)) revert("Voter is already registered.");
 
     voters[registeringVoter].voterAddress = registeringVoter;
-    voters[registeringVoter].voted = false;
-    voters[registeringVoter].choices.length = pluralityProposals.length;
+    voters[registeringVoter].voted[0] = false;
+    voters[registeringVoter].voted[1] = false;
+    voters[registeringVoter].pluralityChoices.length = pluralityProposals.length;
+    voters[registeringVoter].rankedChoices.length = rankedProposals.length;
     totalRegisteredVoters++;
   }
 
   //VOTING FUNCTIONS
-  function vote(bool[] memory voterChoices)
+  function pluralityVote(bool[] memory pluralityChoices)
     public
     isRegisteredVoter
-    hasNotVoted
+    hasNotVoted(0)
   {
-    voters[msg.sender].choices= voterChoices;
-    for (uint index = 0; index < voterChoices.length; index++) {
-      if (voterChoices[index] == false) {
+    voters[msg.sender].pluralityChoices = pluralityChoices;
+
+    for (uint index = 0; index < pluralityChoices.length; index++) {
+      if (pluralityChoices[index] == false) {
         pluralityProposals[index].noCount++;
-      } else if (voterChoices[index] == true) {
+      } else if (pluralityChoices[index] == true) {
         pluralityProposals[index].yesCount++;
       }
     }
-    voters[msg.sender].voted = true;
+    voters[msg.sender].voted[0] = true;
   }
 
-  function countWinningProposals()
+  function rankedVote(uint[][] memory rankedChoices) public     
+  isRegisteredVoter
+  hasNotVoted(1)
+  {
+    voters[msg.sender].rankedChoices = rankedChoices;
+    for(uint i = 0; i < rankedChoices.length; i++){
+      for(uint j = 0; j < rankedProposals[i].numOfOptions; j++){
+        uint rank = rankedChoices[i][j];
+        rankedProposals[i].rankedCount[rank]++;
+      }
+      rankedProposals[i].totalVotes++;
+    }
+    voters[msg.sender].voted[1] = true;
+  }
+
+  function countPluralityProposals()
     public
   {
     for (uint index = 0; index < pluralityProposals.length; index++) {
       if (
         pluralityProposals[index].yesCount > pluralityProposals[index].noCount
       ) {
-        winningProposals[index] = true;
+        winningPluralityProposals[index] = true;
       } else {
-        winningProposals[index] = false;
+        winningPluralityProposals[index] = false;
       }
+    }
+  }
+  function countRankedProposals()
+    public
+  {
+    for (uint index = 0; index < rankedProposals.length; index++) {
+
     }
   }
 
@@ -115,19 +154,32 @@ contract Election {
   function countRegisteredVoters() public view returns (uint) {
     return totalRegisteredVoters;
   }
-    function getVoterChoices(address voter)
+    function getPluralityChoices(address voter)
     public
     view
-    returns (bool[] memory finalChoices)
+    returns (bool[] memory)
   {
     if (msg.sender != voter) revert("You are not authorized to view this information.");
-    return voters[voter].choices;
+    return voters[voter].pluralityChoices;
   }
-  function getNumberOfProposals() public view returns (uint) {
-    return pluralityProposals.length;
+    function getRankedChoices(address voter)
+    public
+    view
+    returns (uint[][] memory)
+  {
+    if (msg.sender != voter) revert("You are not authorized to view this information.");
+    return voters[voter].rankedChoices;
   }
-  function getWinningProposals() public view returns(bool[] memory){
-    return winningProposals;
+
+  function getTotalProposals() public view returns (uint) {
+    uint count = pluralityProposals.length + rankedProposals.length;
+    return count;
+  }
+  function getWinningPluralityProposals() public view returns(bool[] memory){
+    return winningPluralityProposals;
+  }
+  function getWinningRankedProposals() public view returns(uint[] memory){
+    return winningRankedProposals;
   }
 
   function getProposalCount(uint proposalNumber)

@@ -8,8 +8,8 @@ contract("Election Contract", function (accounts) {
   });
   /* POSITIVE TESTS */
   it("Should return the correct number of proposals", async () => {
-    let result = await electionInstance.getNumberOfProposals();
-    assert.equal(result, 5);
+    let result = await electionInstance.getTotalProposals();
+    assert.equal(result, 8);
   });
   it("Should accept valid registration of a voter from the election official", async () => {
     let result = await electionInstance.register(accounts[1], {
@@ -29,27 +29,33 @@ contract("Election Contract", function (accounts) {
   });
 
   it("Should accept valid voting on proposals", async () => {
-    let result = await electionInstance.vote([false, true, false, true, true], {
-      from: accounts[1],
-    });
+    let result = await electionInstance.pluralityVote(
+      [false, true, false, true, true],
+      {
+        from: accounts[1],
+      }
+    );
     assert.equal(result.receipt.status, true, "Vote has been cast.");
   });
   it("Should return the voter's choices to them correctly", async () => {
-    let actualChoices = await electionInstance.getVoterChoices(accounts[1], {
-      from: accounts[1],
-    });
+    let actualChoices = await electionInstance.getPluralityChoices(
+      accounts[1],
+      {
+        from: accounts[1],
+      }
+    );
     let expectedChoices = [false, true, false, true, true];
     assert.deepEqual(actualChoices, expectedChoices);
   });
   it("Should accept counting of winning proposals", async () => {
-    await electionInstance.vote([true, false, false, false, true], {
+    await electionInstance.pluralityVote([true, false, false, false, true], {
       from: accounts[2],
     });
-    await electionInstance.vote([true, true, true, false, false], {
+    await electionInstance.pluralityVote([true, true, true, false, false], {
       from: accounts[3],
     });
 
-    let result = await electionInstance.countWinningProposals();
+    let result = await electionInstance.countPluralityProposals();
     assert.equal(
       result.receipt.status,
       true,
@@ -59,7 +65,7 @@ contract("Election Contract", function (accounts) {
 
   it("Should return the correct boolean value for each proposal", async () => {
     let expectedResults = [true, true, false, false, true];
-    let actualResults = await electionInstance.getWinningProposals();
+    let actualResults = await electionInstance.getWinningPluralityProposals();
 
     assert.deepEqual(actualResults, expectedResults);
   });
@@ -77,7 +83,9 @@ contract("Election Contract", function (accounts) {
       });
       assert(false);
     } catch (error) {
-      assert(error.message.includes("You are not authorized to take this action."));
+      assert(
+        error.message.includes("You are not authorized to take this action.")
+      );
     }
   });
   it("Should NOT allow an account to be registered twice", async () => {
@@ -92,7 +100,7 @@ contract("Election Contract", function (accounts) {
   });
   it("Should NOT allow an account to vote that is not registered", async () => {
     try {
-      await electionInstance.vote([false, true, false, true, true], {
+      await electionInstance.pluralityVote([false, true, false, true, true], {
         from: accounts[5],
       });
       assert(false);
@@ -102,7 +110,7 @@ contract("Election Contract", function (accounts) {
   });
   it("Should NOT allow an account to vote twice", async () => {
     try {
-      await electionInstance.vote([false, true, false, true, true], {
+      await electionInstance.pluralityVote([false, true, false, true, true], {
         from: accounts[1],
       });
       assert(false);
@@ -112,7 +120,7 @@ contract("Election Contract", function (accounts) {
   });
   it("Should NOT allow anyone to view a voter's choices except that voter", async () => {
     try {
-      await electionInstance.getVoterChoices(accounts[1], {
+      await electionInstance.getPluralityChoices(accounts[1], {
         from: accounts[0],
       });
       assert(false);
