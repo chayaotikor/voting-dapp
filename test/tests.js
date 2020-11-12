@@ -9,7 +9,7 @@ contract("Election Contract", function (accounts) {
   /* POSITIVE TESTS */
   it("Should return the correct number of proposals", async () => {
     let result = await electionInstance.getTotalProposals();
-    assert.equal(result, 8);
+    assert.equal(result, 5);
   });
   it("Should accept valid registration of a voter from the election official", async () => {
     let result = await electionInstance.register(accounts[1], {
