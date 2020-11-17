@@ -15,13 +15,14 @@ contract Election {
   struct PluralityProposal {
     uint yesCount;
     uint noCount;
+    uint totalVotes;
   }
 
   struct Voter {
     bool[2] voted;
     address voterAddress;
     bool[] pluralityChoices;
-    uint[][] rankedChoices;
+    // uint[][] rankedChoices;
   }
 
   //Arrays
@@ -39,6 +40,11 @@ contract Election {
 
   //ADDRESSES
   address public electionOfficial;
+
+  //EVENTS
+  event VoteCast(address _voter);
+  event Registered(address _voter);
+  event VotesCounted(uint indexed _totalVotes, uint indexed _yesCount, uint indexed _noCount);
 
   /* MODIFIERS */
   modifier onlyOfficial() {
@@ -76,6 +82,7 @@ contract Election {
     for (uint i = 0; i < _numOfPlurality; i++) {
       pluralityProposals[i].yesCount = 0;
       pluralityProposals[i].noCount = 0;
+      pluralityProposals[i].totalVotes = 0;
     }
 
     // for(uint j = 0; j < rankedOptionCount.length; j++){
@@ -95,6 +102,7 @@ contract Election {
     voters[registeringVoter].pluralityChoices.length = pluralityProposals.length;
     // voters[registeringVoter].rankedChoices.length = rankedProposals.length;
     totalRegisteredVoters++;
+    emit Registered(registeringVoter);
   }
 
   //VOTING FUNCTIONS
@@ -113,6 +121,7 @@ contract Election {
       }
     }
     voters[msg.sender].voted[0] = true;
+    emit VoteCast(msg.sender);
   }
 
   // function rankedVote(uint[][] memory rankedChoices) public     
@@ -130,6 +139,7 @@ contract Election {
     public
   {
     for (uint index = 0; index < pluralityProposals.length; index++) {
+      pluralityProposals[index].totalVotes = pluralityProposals[index].yesCount + pluralityProposals[index].noCount;
       if (
         pluralityProposals[index].yesCount > pluralityProposals[index].noCount
       ) {
@@ -137,6 +147,7 @@ contract Election {
       } else {
         winningPluralityProposals[index] = false;
       }
+        emit VotesCounted(pluralityProposals[index].totalVotes, pluralityProposals[index].yesCount, pluralityProposals[index].noCount);
     }
   }
   // function countRankedProposals()

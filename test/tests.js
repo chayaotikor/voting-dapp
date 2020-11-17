@@ -17,10 +17,17 @@ contract("Election Contract", function (accounts) {
     });
     assert.equal(result.receipt.status, true, "Registration is valid.");
   });
-  it("Should correctly return the number of registered voters", async () => {
-    await electionInstance.register(accounts[2], {
+  it("Should emit the Registered event after registering a voter", async () => {
+    let result = await electionInstance.register(accounts[2], {
       from: accounts[0],
     });
+    assert.equal(
+      result.logs[0].event,
+      "Registered",
+      "Registration event was emitted."
+    );
+  });
+  it("Should correctly return the number of registered voters", async () => {
     await electionInstance.register(accounts[3], {
       from: accounts[0],
     });
@@ -47,21 +54,41 @@ contract("Election Contract", function (accounts) {
     let expectedChoices = [false, true, false, true, true];
     assert.deepEqual(actualChoices, expectedChoices);
   });
+  it("Should emit the VoteCast event after a voter votes", async () => {
+    let result = await electionInstance.pluralityVote(
+      [true, false, false, false, true],
+      {
+        from: accounts[2],
+      }
+    );
+    assert.equal(
+      result.logs[0].event,
+      "VoteCast",
+      "VoteCast event was emitted."
+    );
+  });
   it("Should accept counting of winning proposals", async () => {
-    await electionInstance.pluralityVote([true, false, false, false, true], {
-      from: accounts[2],
-    });
     await electionInstance.pluralityVote([true, true, true, false, false], {
       from: accounts[3],
     });
 
     let result = await electionInstance.countPluralityProposals();
+ 
     assert.equal(
       result.receipt.status,
       true,
       "Proposal count has been completed."
     );
   });
+
+  it("Should emit the VotesCounted Event for each proposal", async () => {
+    let result = await electionInstance.countPluralityProposals();
+    let count = await electionInstance.getTotalProposals();
+
+    for (let i = 0; i < count; i++){
+        assert.equal(result.logs[i].event, "VotesCounted")
+    }
+  })
 
   it("Should return the correct boolean value for each proposal", async () => {
     let expectedResults = [true, true, false, false, true];
