@@ -1,10 +1,10 @@
-const Election = artifacts.require("./Election.sol");
+const Plurality = artifacts.require("./Plurality.sol");
 
 contract("Election Contract", function (accounts) {
   let electionInstance;
 
   before(async () => {
-    electionInstance = await Election.deployed();
+    electionInstance = await Plurality.deployed();
   });
   /* POSITIVE TESTS */
   it("Should return the correct number of proposals", async () => {
