@@ -1,17 +1,9 @@
 pragma solidity >=0.4.22 <0.8.0;
 // pragma experimental ABIEncoderV2;
 
-contract Election {
+contract Plurality {
   /* VARIABLES */
-
   //STRUCTS
-  // struct RankedProposal {
-  //   uint[][] votes;
-  //   uint totalVotes;
-  //   uint numOfOptions;
-  //   uint proposalNumber;
-  // }
-
   struct PluralityProposal {
     uint yesCount;
     uint noCount;
@@ -22,15 +14,11 @@ contract Election {
     bool[2] voted;
     address voterAddress;
     bool[] pluralityChoices;
-    // uint[][] rankedChoices;
   }
 
   //Arrays
   PluralityProposal[] public pluralityProposals;
   bool[] winningPluralityProposals;
-
-  // RankedProposal[] public rankedProposals;
-  // uint[] winningRankedProposals;
 
   //MAPPING
   mapping(address => Voter) voters;
@@ -70,14 +58,11 @@ contract Election {
 
   /* FUNCTIONS */
   //CONSTRUCTOR
-  constructor(uint _numOfPlurality /* uint[] memory rankedOptionCount */) public {
+  constructor(uint _numOfPlurality) public {
     electionOfficial = msg.sender;
 
     pluralityProposals.length = _numOfPlurality;
     winningPluralityProposals.length = _numOfPlurality;
-
-    // rankedProposals.length = rankedOptionCount.length;
-    // winningRankedProposals.length = rankedOptionCount.length;
 
     for (uint i = 0; i < _numOfPlurality; i++) {
       pluralityProposals[i].yesCount = 0;
@@ -85,10 +70,6 @@ contract Election {
       pluralityProposals[i].totalVotes = 0;
     }
 
-    // for(uint j = 0; j < rankedOptionCount.length; j++){
-    //   rankedProposals[j].numOfOptions = rankedOptionCount[j];
-    //   rankedProposals[j].totalVotes = 0;
-    // }
   }
 
   //ELECTION SETUP FUNCTIONS
@@ -98,9 +79,7 @@ contract Election {
 
     voters[registeringVoter].voterAddress = registeringVoter;
     voters[registeringVoter].voted[0] = false;
-    // voters[registeringVoter].voted[1] = false;
     voters[registeringVoter].pluralityChoices.length = pluralityProposals.length;
-    // voters[registeringVoter].rankedChoices.length = rankedProposals.length;
     totalRegisteredVoters++;
     emit Registered(registeringVoter);
   }
@@ -124,17 +103,6 @@ contract Election {
     emit VoteCast(msg.sender);
   }
 
-  // function rankedVote(uint[][] memory rankedChoices) public     
-  // isRegisteredVoter
-  // hasNotVoted(1)
-  // {
-  //   voters[msg.sender].rankedChoices = rankedChoices;
-  //   for(uint i = 0; i < rankedProposals.length; i++){
-  //     rankedProposals[i].votes.push(rankedChoices[i]);
-  //   }
-  //   voters[msg.sender].voted[1] = true;
-  // }
-
   function countPluralityProposals()
     public
   {
@@ -150,14 +118,7 @@ contract Election {
         emit VotesCounted(pluralityProposals[index].totalVotes, pluralityProposals[index].yesCount, pluralityProposals[index].noCount);
     }
   }
-  // function countRankedProposals()
-  //   public
-  // {
-
-  // }
-
   //AUDITING FUNCTIONS
-
   function countRegisteredVoters() public view returns (uint) {
     return totalRegisteredVoters;
   }
@@ -169,26 +130,14 @@ contract Election {
     if (msg.sender != voter) revert("You are not authorized to view this information.");
     return voters[voter].pluralityChoices;
   }
-  //   function getRankedChoices(address voter)
-  //   public
-  //   view
-  //   returns (uint[][] memory)
-  // {
-  //   if (msg.sender != voter) revert("You are not authorized to view this information.");
-  //   return voters[voter].rankedChoices;
-  // }
 
   function getTotalProposals() public view returns (uint) {
-    uint count = pluralityProposals.length; /* + rankedProposals.length; */
+    uint count = pluralityProposals.length;
     return count;
   }
   function getWinningPluralityProposals() public view returns(bool[] memory){
     return winningPluralityProposals;
   }
-  // function getWinningRankedProposals() public view returns(uint[] memory){
-  //   return winningRankedProposals;
-  // }
-
   function getProposalCount(uint proposalNumber)
     public
     view
@@ -199,6 +148,4 @@ contract Election {
 
     return totalCounts;
   }
-
-
 }
