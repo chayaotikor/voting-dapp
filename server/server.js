@@ -1,5 +1,5 @@
 const express = require("express");
-const graphqlHTTP = require("express-graphql");
+const {graphqlHTTP} = require("express-graphql");
 const schema = require('./schema')
 const rootResolver = require('./resolvers')
 
@@ -12,3 +12,5 @@ server.use(
     graphiql: true,
   })
 );
+
+module.exports = server;
