@@ -20,10 +20,8 @@ const store = generateStore(options);
 const drizzle = new Drizzle(options, store);
 
 ReactDOM.render(
-  <DrizzleContext.Provider drizzle={drizzle}>
     <Router>
-      <App />
-    </Router>
-  </DrizzleContext.Provider>,
+      <App drizzle = {drizzle} />
+    </Router>,
   document.getElementById("root")
 );
