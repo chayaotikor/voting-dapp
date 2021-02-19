@@ -1154,6 +1154,14 @@
   resolved "https://registry.yarnpkg.com/@csstools/normalize.css/-/normalize.css-10.1.0.tgz#f0950bba18819512d42f7197e56c518aa491cf18"
   integrity sha512-ij4wRiunFfaJxjB0BdrYHIH8FxBJpOwNPhhAcunlmPdXudL1WQV1qoP9un6JsEBAgQH+7UXyyjh0g7jTxXK6tg==
 
+"@drizzle/react-components@^1.5.3":
+  version "1.5.3"
+  resolved "https://registry.yarnpkg.com/@drizzle/react-components/-/react-components-1.5.3.tgz#14df606656a2639e53015566afa325f2bbc515c0"
+  integrity sha512-i5k3sCSEHnIBBnhj+DNYy4jhovRuhwX6LLNDoJ/wPq/oZEN3AywGSMTPae5a+jAsJyj6yJJKoH9zceYrd3u17g==
+  dependencies:
+    prop-types "^15.7.2"
+    react "^16.8.6"
+
 "@drizzle/react-plugin@^1.5.3":
   version "1.5.3"
   resolved "https://registry.yarnpkg.com/@drizzle/react-plugin/-/react-plugin-1.5.3.tgz#cb3bb0fc3a8d74076c196db16d4084ad340cf240"
@@ -9941,6 +9949,15 @@ react-scripts@4.0.2:
     workbox-webpack-plugin "5.1.4"
   optionalDependencies:
     fsevents "^2.1.3"
+
+react@^16.8.6:
+  version "16.14.0"
+  resolved "https://registry.yarnpkg.com/react/-/react-16.14.0.tgz#94d776ddd0aaa37da3eda8fc5b6b18a4c9a3114d"
+  integrity sha512-0X2CImDkJGApiAlcf0ODKIneSwBPhqJawOa5wCtKbu7ZECrmS26NvtSILynQ66cgkT/RJ4LidJOc3bUESwmU8g==
+  dependencies:
+    loose-envify "^1.1.0"
+    object-assign "^4.1.1"
+    prop-types "^15.6.2"
 
 react@^17.0.1:
   version "17.0.1"
