@@ -1,17 +1,29 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import React from "react";
+import ReactDOM from "react-dom";
+import App from "./App";
+import { BrowserRouter as Router, Route } from "react-router-dom";
+import { DrizzleContext } from "@drizzle/react-plugin";
+import { Drizzle, generateStore } from "@drizzle/store";
+import Plurality from "./artifacts/Plurality.json";
+
+
+const options = {
+  contracts: [Plurality],
+  web3: {
+    fallback: {
+      type: "ws",
+      url: "ws://127.0.0.1:7545",
+    },
+  },
+};
+const store = generateStore(options);
+const drizzle = new Drizzle(options, store);
 
 ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
+  <DrizzleContext.Provider drizzle={drizzle}>
+    <Router>
+      <App />
+    </Router>
+  </DrizzleContext.Provider>,
+  document.getElementById("root")
 );
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
