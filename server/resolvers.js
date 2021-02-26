@@ -1,5 +1,3 @@
-// const {contract} = require('./deployment')
-
 const Web3 = require("web3");
 const { abi } = require("../client/src/artifacts/Plurality.json");
 const web3 = new Web3(Web3.givenProvider || "http://localhost:9545");
