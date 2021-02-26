@@ -6,11 +6,11 @@ contract("Election Contract", function (accounts) {
   before(async () => {
     electionInstance = await Plurality.deployed();
   });
-/* POSITIVE TESTS */
+  /* POSITIVE TESTS */
   it("Should return the address of the election official", async () => {
-    let result = await electionInstance.getElectionOfficial()
-    assert.equal(result, accounts[0])
-  })
+    let result = await electionInstance.getElectionOfficial();
+    assert.equal(result, accounts[0]);
+  });
   it("Should return the correct number of proposals", async () => {
     let result = await electionInstance.getTotalProposals();
     assert.equal(result, 5);
@@ -77,7 +77,7 @@ contract("Election Contract", function (accounts) {
     });
 
     let result = await electionInstance.countPluralityProposals();
- 
+
     assert.equal(
       result.receipt.status,
       true,
@@ -89,10 +89,10 @@ contract("Election Contract", function (accounts) {
     let result = await electionInstance.countPluralityProposals();
     let count = await electionInstance.getTotalProposals();
 
-    for (let i = 0; i < count; i++){
-        assert.equal(result.logs[i].event, "VotesCounted")
+    for (let i = 0; i < count; i++) {
+      assert.equal(result.logs[i].event, "VotesCounted");
     }
-  })
+  });
 
   it("Should return the correct boolean value for each proposal", async () => {
     let expectedResults = [true, true, false, false, true];
@@ -107,6 +107,7 @@ contract("Election Contract", function (accounts) {
   });
 
   /* NEGATIVE TESTS */
+
   it("Should NOT allow an account other than the election official to register a voter", async () => {
     try {
       await electionInstance.register(accounts[4], {
@@ -139,6 +140,24 @@ contract("Election Contract", function (accounts) {
       assert(error.message.includes("Voter is not registered."));
     }
   });
+  it("Should NOT allow votes with the incorrect format to be cast.", async () => {
+    try {
+      await electionInstance.register(accounts[4], {
+        from: accounts[0],
+      });
+      await electionInstance.pluralityVote([false, true, false, true], {
+        from: accounts[4],
+      });
+      assert(false);
+    } catch (error) {
+      assert(
+        error.message.includes(
+          "Incorrect format. Please ensure all proposals have been voted on."
+        )
+      );
+    }
+  });
+
   it("Should NOT allow an account to vote twice", async () => {
     try {
       await electionInstance.pluralityVote([false, true, false, true, true], {
