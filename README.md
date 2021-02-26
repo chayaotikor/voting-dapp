@@ -3,7 +3,7 @@
 
 
 GraphQL Interactions Available:
-
+```
 # MUTATIONS
 
 # mutation {
@@ -57,3 +57,4 @@ GraphQL Interactions Available:
 #     noCount
 #   }
 # }
+```
