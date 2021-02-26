@@ -5,7 +5,7 @@ const rootResolver = require('./resolvers')
 
 const server = express();
 server.use(
-  "/graphql",
+  "/graphiql",
   graphqlHTTP({
     schema: schema,
     rootValue: rootResolver,
