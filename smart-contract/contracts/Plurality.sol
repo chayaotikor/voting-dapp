@@ -17,17 +17,17 @@ contract Plurality {
   }
 
   //Arrays
-  PluralityProposal[] public pluralityProposals;
+  PluralityProposal[] pluralityProposals;
   bool[] winningPluralityProposals;
 
   //MAPPING
   mapping(address => Voter) voters;
 
   //UINTS
-  uint public totalRegisteredVoters;
+  uint totalRegisteredVoters;
 
   //ADDRESSES
-  address public electionOfficial;
+  address electionOfficial;
 
   //EVENTS
   event VoteCast(address _voter);
@@ -53,6 +53,10 @@ contract Plurality {
 
   modifier hasNotVoted(uint voteType) {
     require(voters[msg.sender].voted[voteType] == false, "Voter has already voted.");
+    _;
+  }
+  modifier correctVotingFormat(bool[] memory choices) {
+    require(choices.length == pluralityProposals.length, "Incorrect format. Please ensure all proposals have been voted on.");
     _;
   }
 
@@ -89,6 +93,7 @@ contract Plurality {
     public
     isRegisteredVoter
     hasNotVoted(0)
+    correctVotingFormat(pluralityChoices)
   {
     voters[msg.sender].pluralityChoices = pluralityChoices;
 
@@ -119,6 +124,10 @@ contract Plurality {
     }
   }
   //AUDITING FUNCTIONS
+  function getElectionOfficial() public view returns(address){
+    return electionOfficial;
+  }
+
   function countRegisteredVoters() public view returns (uint) {
     return totalRegisteredVoters;
   }

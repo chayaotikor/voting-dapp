@@ -1,0 +1,7 @@
+# {
+#   getElectionOfficial
+# }
+
+# mutation {
+#   register(address:"")
+# }

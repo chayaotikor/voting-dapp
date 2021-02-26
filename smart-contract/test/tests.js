@@ -6,7 +6,11 @@ contract("Election Contract", function (accounts) {
   before(async () => {
     electionInstance = await Plurality.deployed();
   });
-  /* POSITIVE TESTS */
+/* POSITIVE TESTS */
+  it("Should return the address of the election official", async () => {
+    let result = await electionInstance.getElectionOfficial()
+    assert.equal(result, accounts[0])
+  })
   it("Should return the correct number of proposals", async () => {
     let result = await electionInstance.getTotalProposals();
     assert.equal(result, 5);
