@@ -1,13 +1,14 @@
 pragma solidity >=0.4.22 <0.8.0;
+
 // pragma experimental ABIEncoderV2;
 
 contract Plurality {
   /* VARIABLES */
   //STRUCTS
   struct PluralityProposal {
-    uint yesCount;
-    uint noCount;
-    uint totalVotes;
+    uint256 yesCount;
+    uint256 noCount;
+    uint256 totalVotes;
   }
 
   struct Voter {
@@ -24,7 +25,7 @@ contract Plurality {
   mapping(address => Voter) voters;
 
   //UINTS
-  uint totalRegisteredVoters;
+  uint256 totalRegisteredVoters;
 
   //ADDRESSES
   address electionOfficial;
@@ -32,7 +33,11 @@ contract Plurality {
   //EVENTS
   event VoteCast(address _voter);
   event Registered(address _voter);
-  event VotesCounted(uint indexed _totalVotes, uint indexed _yesCount, uint indexed _noCount);
+  event VotesCounted(
+    uint256 indexed _totalVotes,
+    uint256 indexed _yesCount,
+    uint256 indexed _noCount
+  );
 
   /* MODIFIERS */
   modifier onlyOfficial() {
@@ -51,39 +56,46 @@ contract Plurality {
     _;
   }
 
-  modifier hasNotVoted(uint voteType) {
-    require(voters[msg.sender].voted[voteType] == false, "Voter has already voted.");
+  modifier hasNotVoted(uint256 voteType) {
+    require(
+      voters[msg.sender].voted[voteType] == false,
+      "Voter has already voted."
+    );
     _;
   }
   modifier correctVotingFormat(bool[] memory choices) {
-    require(choices.length == pluralityProposals.length, "Incorrect format. Please ensure all proposals have been voted on.");
+    require(
+      choices.length == pluralityProposals.length,
+      "Incorrect format. Please ensure all proposals have been voted on."
+    );
     _;
   }
 
   /* FUNCTIONS */
   //CONSTRUCTOR
-  constructor(uint _numOfPlurality) public {
+  constructor(uint256 _numOfPlurality) public {
     electionOfficial = msg.sender;
 
     pluralityProposals.length = _numOfPlurality;
     winningPluralityProposals.length = _numOfPlurality;
 
-    for (uint i = 0; i < _numOfPlurality; i++) {
+    for (uint256 i = 0; i < _numOfPlurality; i++) {
       pluralityProposals[i].yesCount = 0;
       pluralityProposals[i].noCount = 0;
       pluralityProposals[i].totalVotes = 0;
     }
-
   }
 
   //ELECTION SETUP FUNCTIONS
   function register(address registeringVoter) public onlyOfficial {
     //Check if the voter is already registered based on their address
-    if (voters[registeringVoter].voterAddress != address(0)) revert("Voter is already registered.");
+    if (voters[registeringVoter].voterAddress != address(0))
+      revert("Voter is already registered.");
 
     voters[registeringVoter].voterAddress = registeringVoter;
     voters[registeringVoter].voted[0] = false;
-    voters[registeringVoter].pluralityChoices.length = pluralityProposals.length;
+    voters[registeringVoter].pluralityChoices.length = pluralityProposals
+      .length;
     totalRegisteredVoters++;
     emit Registered(registeringVoter);
   }
@@ -97,7 +109,7 @@ contract Plurality {
   {
     voters[msg.sender].pluralityChoices = pluralityChoices;
 
-    for (uint index = 0; index < pluralityChoices.length; index++) {
+    for (uint256 index = 0; index < pluralityChoices.length; index++) {
       if (pluralityChoices[index] == false) {
         pluralityProposals[index].noCount++;
       } else if (pluralityChoices[index] == true) {
@@ -108,11 +120,11 @@ contract Plurality {
     emit VoteCast(msg.sender);
   }
 
-  function countPluralityProposals()
-    public
-  {
-    for (uint index = 0; index < pluralityProposals.length; index++) {
-      pluralityProposals[index].totalVotes = pluralityProposals[index].yesCount + pluralityProposals[index].noCount;
+  function countPluralityProposals() public {
+    for (uint256 index = 0; index < pluralityProposals.length; index++) {
+      pluralityProposals[index].totalVotes =
+        pluralityProposals[index].yesCount +
+        pluralityProposals[index].noCount;
       if (
         pluralityProposals[index].yesCount > pluralityProposals[index].noCount
       ) {
@@ -120,37 +132,47 @@ contract Plurality {
       } else {
         winningPluralityProposals[index] = false;
       }
-        emit VotesCounted(pluralityProposals[index].totalVotes, pluralityProposals[index].yesCount, pluralityProposals[index].noCount);
+      emit VotesCounted(
+        pluralityProposals[index].totalVotes,
+        pluralityProposals[index].yesCount,
+        pluralityProposals[index].noCount
+      );
     }
   }
+
   //AUDITING FUNCTIONS
-  function getElectionOfficial() public view returns(address){
+  function getElectionOfficial() public view returns (address) {
     return electionOfficial;
   }
 
-  function countRegisteredVoters() public view returns (uint) {
+  function countRegisteredVoters() public view returns (uint256) {
     return totalRegisteredVoters;
   }
-    function getPluralityChoices(address voter)
+
+  
+  function getTotalProposals() public view returns (uint256) {
+    uint256 count = pluralityProposals.length;
+    return count;
+  }
+
+  function getPluralityChoices(address voter)
     public
     view
     returns (bool[] memory)
   {
-    if (msg.sender != voter) revert("You are not authorized to view this information.");
+    if (msg.sender != voter)
+      revert("You are not authorized to view this information.");
     return voters[voter].pluralityChoices;
   }
 
-  function getTotalProposals() public view returns (uint) {
-    uint count = pluralityProposals.length;
-    return count;
-  }
-  function getWinningPluralityProposals() public view returns(bool[] memory){
+  function getWinningPluralityProposals() public view returns (bool[] memory) {
     return winningPluralityProposals;
   }
-  function getProposalCount(uint proposalNumber)
+
+  function getProposalCount(uint256 proposalNumber)
     public
     view
-    returns (uint[2] memory totalCounts)
+    returns (uint256[2] memory totalCounts)
   {
     totalCounts[0] = pluralityProposals[proposalNumber].noCount;
     totalCounts[1] = pluralityProposals[proposalNumber].yesCount;

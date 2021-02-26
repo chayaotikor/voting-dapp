@@ -10,7 +10,65 @@ const contract = new web3.eth.Contract(abi, process.env.CONTRACT_ADDRESS, {
 });
 
 module.exports = {
-  getElectionOfficial: async (name) => {
+  /* CONTRACT MUTATION RESOLVERS */
+  register: async ({ address }) => {
+    try {
+      let transaction = await contract.methods.register(address).send();
+
+      return `The following address has been registered: ${transaction.events.Registered.returnValues[0]}`;
+    } catch (error) {
+      let keys = Object.keys(error.data);
+      if (error.data[keys[0]].reason) {
+        throw Error(`${error.data[keys[0]].reason}`);
+      } else {
+        throw Error(error);
+      }
+    }
+  },
+
+  vote: async ({ choices, sender }) => {
+    try {
+      let transaction = await contract.methods
+        .pluralityVote(choices)
+        .send({ from: sender });
+
+      return `Votes have been cast from the following address: ${transaction.events.VoteCast.returnValues[0]}`;
+    } catch (error) {
+      console.log(error);
+      let keys = Object.keys(error.data);
+      if (error.data[keys[0]].reason) {
+        throw Error(`${error.data[keys[0]].reason}`);
+      } else {
+        throw Error(error);
+      }
+    }
+  },
+
+  countVotes: async () => {
+    try {
+      let transaction = await contract.methods.countPluralityProposals().send();
+
+      let result = transaction.events.VotesCounted.map((proposal) => {
+        return {
+          totalVotes: proposal.returnValues._totalVotes,
+          yesCount: proposal.returnValues._yesCount,
+          noCount: proposal.returnValues._noCount,
+        };
+      });
+
+      return result;
+    } catch (error) {
+      let keys = Object.keys(error.data);
+      if (error.data[keys[0]].reason) {
+        throw Error(`${error.data[keys[0]].reason}`);
+      } else {
+        throw Error(error);
+      }
+    }
+  },
+
+  /* CONTRACT QUERY RESOLVERS */
+  electionOfficial: async () => {
     try {
       let official = await contract.methods.getElectionOfficial().call();
       return official;
@@ -19,48 +77,69 @@ module.exports = {
     }
   },
 
-  register: async ({ address }) => {
+  totalRegisteredVoters: async () => {
     try {
-      let transaction = await contract.methods.register(address).send();
-
-      return `The following address has been registered: ${transaction.events.Registered.returnValues[0]}`;
+      let registeredCount = await contract.methods
+        .countRegisteredVoters()
+        .call();
+      return registeredCount;
     } catch (error) {
-      let keys = Object.keys(error.data);
-      throw Error(`${error.data[keys[0]].reason}`);
+      throw Error(error);
     }
   },
 
-  vote: async ({ choices, sender }) => {
+  totalProposals: async () => {
     try {
-      let transaction = await contract.methods.pluralityVote(choices).send({from: sender});
-
-      return `Votes have been cast from the following address: ${transaction.events.VoteCast.returnValues[0]}`;
-
+      let proposalCount = await contract.methods.getTotalProposals().call();
+      return proposalCount;
     } catch (error) {
-      let keys = Object.keys(error.data);
-      throw Error(`${error.data[keys[0]].reason}`);
-    }
-  },
-  countVotes: async () => {
-    try {
-      let transaction = await contract.methods.countPluralityProposals().send();
-
-      let result = transaction.events.VotesCounted.map(proposal => {
-        
-        return {
-          totalVotes: proposal.returnValues._totalVotes,
-          yesCount: proposal.returnValues._yesCount,
-          noCount: proposal.returnValues._noCount,
-        };
-      });
-      
-       return result;
-
-    } catch (error) {
-      let keys = Object.keys(error.data);
-      throw Error(`${error.data[keys[0]].reason}`);
+      throw Error(error);
     }
   },
 
-  
+  voterChoices: async ({ address, sender }) => {
+    try {
+      let choices = await contract.methods
+        .getPluralityChoices(address)
+        .call({ from: sender });
+
+      return choices;
+    } catch (error) {
+      let keys = Object.keys(error.data);
+      if (error.data[keys[0]].reason) {
+        throw Error(`${error.data[keys[0]].reason}`);
+      } else {
+        throw Error(error);
+      }
+    }
+  },
+
+  winningProposals: async () => {
+    try {
+      let winners = await contract.methods
+        .getWinningPluralityProposals()
+        .call();
+      return winners;
+    } catch (error) {
+      throw Error(error);
+    }
+  },
+
+  proposalVoteCount: async ({ proposalNumber }) => {
+    try {
+      let counts = await contract.methods
+        .getProposalCount(proposalNumber)
+        .call();
+
+      let result = {
+        totalVotes: Number(counts[0]) + Number(counts[1]),
+        yesCount: counts[0],
+        noCount: counts[1],
+      };
+
+      return result;
+    } catch (error) {
+      throw Error(error);
+    }
+  },
 };

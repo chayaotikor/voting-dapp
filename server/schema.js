@@ -8,11 +8,16 @@ module.exports = buildSchema(`
   }
 
   type RootQuery {
-    getElectionOfficial: String!
-    countVotes: [ProposalCount!]!
+    electionOfficial: String!
+    totalRegisteredVoters: Int!
+    voterChoices(address: String!, sender: String!): [Boolean!]!
+    totalProposals: Int!
+    winningProposals: [Boolean!]!
+    proposalVoteCount(proposalNumber: Int!): ProposalCount!
   }
-
+  
   type RootMutation {
+    countVotes: [ProposalCount!]!
     register(address: String!): String!
     vote(choices: [Boolean!]!, sender: String!): String!
   }
