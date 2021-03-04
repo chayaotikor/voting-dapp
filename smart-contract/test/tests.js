@@ -97,7 +97,7 @@ contract("Election Contract", function (accounts) {
   it("Should return the correct boolean value for each proposal", async () => {
     let expectedResults = [true, true, false, false, true];
     let actualResults = await electionInstance.getWinningPluralityProposals();
-
+    
     assert.deepEqual(actualResults, expectedResults);
   });
   it("Should return the yes and no counts for a given proposal", async () => {
