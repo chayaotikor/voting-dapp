@@ -14,6 +14,7 @@ module.exports = buildSchema(`
     totalProposals: Int!
     winningProposals: [Boolean!]!
     proposalVoteCount(proposalNumber: Int!): ProposalCount!
+    getAccounts: [String!]
   }
   
   type RootMutation {

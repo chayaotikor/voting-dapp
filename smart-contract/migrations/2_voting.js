@@ -1,5 +1,5 @@
 const Voting = artifacts.require("Voting");
 
-module.exports = function (deployer) {
-  deployer.deploy(Voting, 7);
+module.exports = async function (deployer) {
+  deployer.deploy(Voting, 7)
 };

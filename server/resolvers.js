@@ -1,8 +1,8 @@
 const Web3 = require("web3");
-const { abi } = require("../client/src/artifacts/Plurality.json");
+const { abi, networks } = require("../client/src/artifacts/Voting.json");
 const web3 = new Web3(Web3.givenProvider || "http://localhost:9545");
 
-const contract = new web3.eth.Contract(abi, process.env.CONTRACT_ADDRESS, {
+const contract = new web3.eth.Contract(abi, networks["5777"].address, {
   from: process.env.DEFAULT_ACCOUNT,
   gas: 3000000,
 });
@@ -12,7 +12,7 @@ module.exports = {
   register: async ({ address }) => {
     try {
       let transaction = await contract.methods.register(address).send();
-
+      console.log(transaction)
       return `The following address has been registered: ${transaction.events.Registered.returnValues[0]}`;
     } catch (error) {
       let keys = Object.keys(error.data);
@@ -27,7 +27,7 @@ module.exports = {
   vote: async ({ choices, sender }) => {
     try {
       let transaction = await contract.methods
-        .pluralityVote(choices)
+        .vote(choices)
         .send({ from: sender });
 
       return `Votes have been cast from the following address: ${transaction.events.VoteCast.returnValues[0]}`;
@@ -44,7 +44,7 @@ module.exports = {
 
   countVotes: async () => {
     try {
-      let transaction = await contract.methods.countPluralityProposals().send();
+      let transaction = await contract.methods.countProposals().send();
 
       let result = transaction.events.VotesCounted.map((proposal) => {
         return {
@@ -98,7 +98,7 @@ module.exports = {
   voterChoices: async ({ address, sender }) => {
     try {
       let choices = await contract.methods
-        .getPluralityChoices(address)
+        .getChoices(address)
         .call({ from: sender });
 
       return choices;
@@ -114,9 +114,7 @@ module.exports = {
 
   winningProposals: async () => {
     try {
-      let winners = await contract.methods
-        .getWinningPluralityProposals()
-        .call();
+      let winners = await contract.methods.getWinningProposals().call();
       return winners;
     } catch (error) {
       throw Error(error);
@@ -136,6 +134,15 @@ module.exports = {
       };
 
       return result;
+    } catch (error) {
+      throw Error(error);
+    }
+  },
+
+  getAccounts: async () => {
+    try {
+      let accounts = await web3.eth.getAccounts();
+      return accounts;
     } catch (error) {
       throw Error(error);
     }
